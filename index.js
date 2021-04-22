@@ -1,14 +1,17 @@
-let msg = 'Meu nome é Renato Alves de Oliveira\nTenho 23 anos\nSou mestrando em IoT\nGosto de Aves e Plantas'
-let key = 'senha45fujeodisl6217dfcaiolkpjg'
-// let key = '5f4d78s69g12g4j5k4g5scfg65bd9gf'
+let _msg = 'Renato Alves de Oliveira'
+let _key = 'senha45fujeodisl6217dfcaiolkpjg'
+// let _key = 's9x'
 
-text2binary = (text) => text.split('').map(char => char.charCodeAt(0).toString(2)).join(' ')
-text2hex = (text) => text.split('').map(char => char.charCodeAt(0).toString(16)).join(' ')
-text2charcode = (text) => text.split('').map(x => x.charCodeAt()).join(' ')
+// text2binary = (text) => text.split('').map(char => char.charCodeAt(0).toString(2))
+// text2hex = (text) => text.split('').map(char => char.charCodeAt(0).toString(16))
+text2charcode = (text) => text.split('').map(x => x.charCodeAt())
 
-binary2text = (binary) => binary.split(' ').map(bloco => String.fromCharCode(parseInt(bloco, 2))).join('')
-hex2text = (hex) => hex.split(' ').map(bloco => String.fromCharCode(parseInt(bloco, 16))).join('')
-charcode2text = (charcode) => charcode.split(' ').map(bloco => String.fromCharCode(bloco)).join('')
+// binary2text = (binary) => binary.map(bloco => String.fromCharCode(parseInt(bloco, 2))).join('')
+// hex2text = (hex) => hex.map(bloco => String.fromCharCode(parseInt(bloco, 16))).join('')
+charcode2text = (charcode) => charcode.map(bloco => String.fromCharCode(bloco)).join('')
+
+let msg = text2charcode(_msg)
+let key = text2charcode(_key)
 
 // console.log(text2binary(msg))
 // console.log(binary2text(text2binary(msg)))
@@ -19,35 +22,86 @@ charcode2text = (charcode) => charcode.split(' ').map(bloco => String.fromCharCo
 // console.log(text2charcode(msg))
 // console.log(charcode2text(text2charcode(msg)))
 
-encript = (text) => {
-    let text_enc = ''
-    let i = 0
-    text.split('').forEach(el => {
-        if (!key[i]) i = 0
-        if (i % 2)  //É ímpar?
-            text_enc += (key[i].charCodeAt() - el.charCodeAt()) + ' '
+enc_charCode = (texto, chave) => {
+    let result = [], i = 0
+    texto.forEach(el => {
+        if (!chave[i]) i = 0
+        if (i % 2)   //É ímpar?
+            result.push(chave[i] - el)
         else
-            text_enc += (key[i].charCodeAt() + el.charCodeAt()) + ' '
+            result.push(chave[i] + el)
         i++
     })
-    return text_enc.slice(0, -1)
+    return result
 }
 
-decript = (text_enc) => {
-    let text_dec = ''
-    let i = 0
-    text_enc.split(' ').forEach(el => {
-        // if (!el) return text_dec
-        if (!key[i]) i = 0
-        if (i % 2)  //É ímpar?
-            text_dec += (key[i].charCodeAt() - el) + ' '
-        else
-            text_dec += (el - key[i].charCodeAt()) + ' '
+enc_binary = (texto, chave) => {
+    let result = [], i = 0
+    texto.forEach(el => {
+        if (!chave[i]) i = 0
+        result.push(chave[i] ^ el)
         i++
     })
-    return text_dec.slice(0, -1)
+    return result
 }
 
-// let aux = encript(msg)
-// console.log(charcode2text(aux) + '\n\n')
-// console.log(charcode2text(decript(aux)) + '\n')
+dec_charCode = (texto, chave) => {
+    let result = [], i = 0
+    texto.forEach(el => {
+        if (!chave[i]) i = 0
+        if (i % 2)  //É ímpar?
+            result.push(chave[i] - el)
+        else
+            result.push(el - chave[i])
+        i++
+    })
+    return result
+}
+
+dec_binary = (texto, chave) => {
+    let result = [], i = 0
+    texto.forEach(el => {
+        if (!chave[i]) i = 0
+        result.push(chave[i] ^ el)
+        i++
+    })
+    return result
+}
+
+console.log('\n####### CHAVE #######\n')
+console.log(charcode2text(key))
+
+console.log('\n####### TEXTO ORIGINAL #######\n')
+console.log(charcode2text(msg))
+
+//ENCRIPTAÇÃO
+let enc1 = enc_charCode(msg, key)
+// console.log(enc1 + ' #enc1')
+console.log('\n####### 1º rodada de ENCRIPTAÇÃO #######\n')
+console.log(charcode2text(enc1))
+
+let enc2 = enc_binary(enc1, key)
+// console.log(enc2 + ' #enc2')
+console.log('\n####### 2º rodada de ENCRIPTAÇÃO #######\n')
+console.log(charcode2text(enc2))
+
+let enc3 = enc_binary(enc2, key.reverse())
+// console.log(enc3 + ' #enc3')
+console.log('\n####### 3º rodada de ENCRIPTAÇÃO #######\n')
+console.log(charcode2text(enc3))
+
+//DECRIPTAÇÃO
+let dec3 = dec_binary(enc3, key.reverse())
+// console.log(dec3 + ' #dec3')
+console.log('\n####### 1º rodada de DECRIPTAÇÃO #######\n')
+console.log(charcode2text(dec3))
+
+let dec2 = dec_binary(enc2, key)
+// console.log(dec2 + ' #dec2')
+console.log('\n####### 2º rodada de DECRIPTAÇÃO #######\n')
+console.log(charcode2text(dec2))
+
+let dec1 = dec_charCode(dec2, key)
+// console.log(dec1 + ' #dec1')
+console.log('\n####### 3º rodada de DECRIPTAÇÃO #######\n')
+console.log(charcode2text(dec1) + '\n')
